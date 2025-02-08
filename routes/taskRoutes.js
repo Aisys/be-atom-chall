@@ -75,6 +75,65 @@ router.delete('/:taskId', authenticate, async (req, res) => {
     }
 });
 
+router.post('/', authenticate, async (req, res) => {
+    console.log('------- tasks: [START] ');
+    const { title, description } = req.body;
+    try {
+        if (!title || !description) {
+            return res.status(400).json({ message: 'Título y descripción son obligatorios' });
+        }
 
+        const creation = new Date();
+        const newTask = { title, description, complete: false, creation };
+        const docRef = await db.collection('tasks').add(newTask);
+
+        const createdTask = { id: docRef.id, ...newTask };
+        console.log('------- tasks: [END] ');
+        res.status(201).json(createdTask); // 201 Created
+
+    } catch (error) {
+        console.error('Error al crear tarea:', error);
+        res.status(500).json({ message: 'Error al crear tarea' });
+    }
+});
+
+router.put('/:idTask', async (req, res) => {
+
+    console.log('------- tasks/:id : [START] ');
+    const idTask = req.params.idTask;
+    const { title, description } = req.body;
+    try {
+
+        if (!title || !description) {
+            return res.status(400).json({ message: 'Título y descripción son obligatorios' });
+        }
+
+        const taskRef = db.collection('tasks').doc(idTask);
+        const taskDoc = await taskRef.get();
+
+        if (!taskDoc.exists) {
+            return res.status(404).json({ message: `No se encontró la tarea con ID: ${idTask}` });
+        }
+
+        const { complete, creation } = taskDoc.data();
+        const updatedTask = {
+            title,
+            description
+        };
+
+
+        await taskRef.update(updatedTask);
+
+
+        const updatedTaskDoc = await taskRef.get();
+        const updatedTaskWithId = { id: updatedTaskDoc.id, ...updatedTaskDoc.data() };
+        console.log('------- tasks/:id : [END] ');
+        res.json(updatedTaskWithId);
+
+    } catch (error) {
+        console.error('Error al actualizar tarea:', error);
+        res.status(500).json({ message: 'Error al actualizar tarea' });
+    }
+});
 
 module.exports = router;
