@@ -7,7 +7,7 @@ const authenticate = require('./../middleware/auth');
 const User = require('../models/User');
 
 router.post('/login', async (req, res) => {
-
+  console.log('------- users/login: [START] ');
   const { email, password } = req.body;
 
   try {
@@ -22,7 +22,7 @@ router.post('/login', async (req, res) => {
     }
 
     const token = await admin.auth().createCustomToken(userDoc.docs[0].id);
-
+    console.log('------- users/login: [END] ');
     return res.json({ token });
 
   } catch (error) {
@@ -32,6 +32,7 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/signup', async (req, res) => {
+  console.log('------- users/signup: [START] ');
   const { names, lastNames, email, password } = req.body;
   try {
     if (!names || !lastNames || !email || !password) {
@@ -48,6 +49,7 @@ router.post('/signup', async (req, res) => {
     const newUserDoc = await db.collection('users').where('email', '==', email).get();
     const token = await admin.auth().createCustomToken(newUserDoc.docs[0].id);
 
+    console.log('------- users/signup: [END] ');
     return res.status(201).json({ 
       token, 
       user: { 
@@ -65,6 +67,7 @@ router.post('/signup', async (req, res) => {
 });
 
 router.get('/', authenticate, async (req, res) => {
+  console.log('------- users: [START] ');
   try {
     const usersCollection = await db.collection('users').get();
     const users = usersCollection.docs.map(doc => {
@@ -73,6 +76,7 @@ router.get('/', authenticate, async (req, res) => {
       user.id = doc.id;
       return user;
     });
+    console.log('------- users: [END] ');
     res.json(users);
   } catch (error) {
     console.error('Error al obtener usuarios:', error);
