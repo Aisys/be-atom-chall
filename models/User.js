@@ -4,7 +4,6 @@ class User {
       this.lastNames = lastNames;
       this.email = email;
       this.password = password;
-      this.id = null; // El ID se asignará posteriormente
     }
   }
   
