@@ -84,5 +84,33 @@ router.get('/', authenticate, async (req, res) => {
   }
 });
 
+router.get('/:email', async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    if (!email) {
+      return res.status(400).json({ message: 'Se requiere un email' });
+    }
+
+    const userDoc = await db.collection('users').where('email', '==', email).get();
+    if (userDoc.empty) {
+      return res.status(404).json({ message: 'No se encontró ningún usuario con ese email' });
+    }
+
+    const userData = userDoc.docs[0].data();
+    const user = new User(
+      userData.names,
+      userData.lastNames,
+      userData.email,
+    );
+    user.id = userDoc.docs[0].id;
+
+    res.json(user);
+  } catch (error) {
+    console.error('Error al buscar usuario por email:', error);
+    res.status(500).json({ message: 'Error al buscar usuario por email' });
+  }
+});
+
 
 module.exports = router;
